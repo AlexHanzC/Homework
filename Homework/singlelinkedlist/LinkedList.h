@@ -147,6 +147,9 @@ SingleLinkedList<T>& SingleLinkedList<T>::operator=(const SingleLinkedList<T> &_
 template <typename T>
 void SingleLinkedList<T>::_copy(const SingleLinkedList<T> &_l)
 {
+    head  = nullptr;
+    currentPos = nullptr;
+    size = 0;
     Node *p = _l.head;
     while (p != nullptr)
     {
@@ -204,17 +207,18 @@ bool SingleLinkedList<T>:: isEmpty() const
 template <typename T>
 void SingleLinkedList<T>:: insert(T _val)
 {
+    Node *p = new Node(_val);
     if(head == nullptr)
     {
         head = new Node(_val);
         currentPos = head;
     }
-    else
+    else if(currentPos != nullptr)
     {
-        Node *p = new Node(_val);
         p -> next = currentPos -> next;
         currentPos -> next = p;
     }
+    size++;
 }
 
 template <typename T>
