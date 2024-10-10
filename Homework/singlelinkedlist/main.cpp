@@ -22,7 +22,6 @@ int main() {
     c2.insert(8.8);
     bool f_c3 = c3.find(2.0);
     c3.insert(8.8);
-    std::cout << std::fixed << std::setprecision(1);
     c1.printList();
     c2.printList();
     c3.printList();
