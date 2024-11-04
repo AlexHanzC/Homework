@@ -61,7 +61,7 @@ BinaryNode* detachMin(BinaryNode *&t)
     if(!t ->left)//判断是否为叶子节点
     {
         BinaryNode* minNode = t;
-        t = nullptr;
+        t = t->right;
         return minNode; 
     }
     else
@@ -90,38 +90,64 @@ BinaryNode *findMin(BinaryNode *t) const {
 \end{lstlisting}
 
 \subsection{remove()函数的完善}
-继续detachMin()的实现逻辑，我们可以发现detachMin()函数返回的是一个节点，节点的element是右子树的最小节点(必是叶子)的值，right和left是nullptr,接下来只要进行修改的指针的操作，然后将修改后的节点覆盖应该被删除节点即可，具体代码如下：
+要通过移动节点的方式实现remove操作总体分为四步：1.找到要删除的节点 cur 和它的父节点 par; 2.找到 cur的右子树中的最小值节点 min ,并将其断开 ; 3.将 min的左子树和右子树分别链接到 cur 的左子树和右子树；4.将 par的指针指向 min，然后删除 cur。具体代码如下：
 \begin{lstlisting}[language=C++, caption={remove()函数}]  
-void remove(const Comparable &x, BinaryNode * &t) {
-    /// 这个逻辑其实是 find and remove, 从 t 开始
-    if (t == nullptr) {
-    return;  /// 元素不存在
-    }
-    if (x < t->element) {
-        remove(x, t->left);
-        } else if (x > t->element) {
-        remove(x, t->right);
-    } 
-    /// 进入以下这两个分支，都是说明找到了要删除的元素
-    else if (t->left != nullptr && t->right != nullptr) ///有两个节点
+void remove(const Comparable &x, BinaryNode * &t) 
+{
+    if(!t) return;//如果t为空节点
+
+    BinaryNode* par = nullptr;
+    BinaryNode* cur = t;
+    while(cur && cur -> element != x )//找到值为x的节点以及其parent节点，注意条件顺序
     {
-        BinaryNode* min = detachMin(t -> right);
+        par =cur;
+        if(cur -> element < x )
+        {
+            cur = cur->right;
+        }else if(cur -> element > x)
+        {
+            cur = cur->left;
+        }
+    }
 
-        min -> left = t->left;
-        min -> right = t -> right;
+    if(!cur) return;//x没有被找到
 
-        delete t;
-        t = min;
+    if(!(cur ->left) || !(cur -> right))//要删除的节点至多只有一个child节点
+    {
+        if(!par)//如果删除根节点
+        {
+            t = (cur -> left)? cur->left : cur->right;//修改根节点
+        }
+        if(par -> left == cur)//t是par的左节点
+        {
+            par -> left = (cur -> left)? cur->left : cur->right;
+        }else
+        {
+            par -> right = (cur -> left)? cur->left : cur->right;
+        }
+        delete cur;
+    }else//有两个child节点
+    {
+        BinaryNode* min = detachMin(cur->right);
 
-    } else {
-        /// 有一个或没有子节点的情形是简单的
-        BinaryNode *oldNode = t;
-        t = (t->left != nullptr) ? t->left : t->right;
-        delete oldNode;
+        min -> left = cur -> left;// 将当前节点的左子树链接到后继节点
+        min -> right = cur -> right;// 将当前节点的右子树链接到后继节点
+        if(!par)//如果删除根节点
+        {
+            t = min;//修改根节点
+        }
+        else if(par -> left == t)//t是par的左节点
+        {
+            par -> left = min;// 父节点指向后继节点
+        }else//t是右节点
+        {
+            par -> right = min;// 父节点指向后继节点
+        }
+        delete cur;
     }
 }
 \end{lstlisting}
-笔者在里发现，仅仅从该代码实现的角度，其实现的原理本质上还是复制，只不过是从原来的值复制到现在的节点复制，而且利用的是浅拷贝，在语句" delete t; "还会暂时造成指针悬空的问题，虽然被t又min赋值解决了悬空的问题。这与链表的节点交换是不一样的，在从某种意义来说，这样的实现方式可以保持树的指针结构完整性。
+
 
 \subsection{树的可视化实现}
 在这里构造drawTree()函数主要是为了，便于直观的观察和跟踪remove()函数操作后的结果，这里打印的树的节点是纵向排列的。具体代码如下：
