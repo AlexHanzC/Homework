@@ -372,41 +372,59 @@ private:
      * @param x 要移除的元素
      * @param t 当前节点指针
      */
-    void remove(const Comparable &x, BinaryNode * &t) {
-        /// 这个逻辑其实是 find and remove, 从 t 开始
-        if (t == nullptr) {
-            return;  /// 元素不存在
-        }
-        if (x < t->element) {
-            remove(x, t->left);
-        } else if (x > t->element) {
-            remove(x, t->right);
-        } 
-        /// 进入以下这两个分支，都是说明找到了要删除的元素
-        else if (t->left != nullptr && t->right != nullptr) ///有两个节点
+    void remove(const Comparable &x, BinaryNode * &t) 
+    {
+        if(!t) return;//如果t为空节点
+
+        BinaryNode* par = nullptr;
+        BinaryNode* cur = t;
+        while(cur && cur -> element != x )//找到值为x的节点以及其parent节点，注意条件顺序
         {
-        /*
-            /// 将右子树中的最小元素替换当前节点，这里实际上只是替换值，不是替换节点
-            t->element = findMin(t->right)->element;
-            /// 然后递归删除右子树中的最小元素
-            remove(t->element, t->right);
-            /// 这是一种效率较低的做法，更好的做法是做节点的替换和移动
-            /// 但会更加复杂，我们在后面再讨论
-        */
-            BinaryNode* min = detachMin(t -> right);
+            par =cur;
+            if(cur -> element < x )
+            {
+                cur = cur->right;
+            }else if(cur -> element > x)
+            {
+                cur = cur->left;
+            }
+        }
 
-            min -> left = t->left;
-            min -> right = t -> right;
+        if(!cur) return;//x没有被找到
 
-            delete t;
-            t = min;
+        if(!(cur ->left) || !(cur -> right))//要删除的节点至多只有一个child节点
+        {
+            if(!par)//如果删除根节点
+            {
+                t = (cur -> left)? cur->left : cur->right;//修改根节点
+            }
+            if(par -> left == cur)//t是par的左节点
+            {
+                par -> left = (cur -> left)? cur->left : cur->right;
+            }else
+            {
+                par -> right = (cur -> left)? cur->left : cur->right;
+            }
+            delete cur;
+        }else//有两个child节点
+        {
+            BinaryNode* min = detachMin(cur->right);
 
+            min -> left = cur -> left;// 将当前节点的左子树链接到后继节点
+            min -> right = cur -> right;// 将当前节点的右子树链接到后继节点
+            if(!par)//如果删除根节点
+            {
+                t = min;//修改根节点
+            }
+            else if(par -> left == t)//t是par的左节点
+            {
+                par -> left = min;// 父节点指向后继节点
+            }else//t是右节点
+            {
+                par -> right = min;// 父节点指向后继节点
+            }
+            delete cur;
 
-        } else {
-            /// 有一个或没有子节点的情形是简单的
-            BinaryNode *oldNode = t;
-            t = (t->left != nullptr) ? t->left : t->right;
-            delete oldNode;
         }
     }
 
@@ -435,7 +453,7 @@ private:
         if(!t ->left)//判断是否为叶子节点
         {
             BinaryNode* minNode = t;
-            t = nullptr;
+            t = t->right;
             return minNode; 
         }
         else
