@@ -65,6 +65,13 @@ inline void split(vector<string> &result,string &input)
         }
         low = fast;
     }
+    /*
+    for(auto x : result)
+    {
+        cout << x << " ";
+    }
+    cout << endl;
+    */
 }
 
 /**
@@ -139,14 +146,19 @@ inline void check_e(string & str ,vector<string> &result ,int &k,int &flag)
 
     // e 后的第一字符可以是 '+' 或 '-'
     size_t start = 0;
-    if (after_e[0] == '+' || after_e[0] == '-') {
-        start = 1;
+    if (after_e[0] == '+' || after_e[0] == '-' ) {
+        if(after_e.size()>1) start = 1;
+        else {
+            cout << "ILLEGAL_e4"<< endl;
+            flag = 0;
+            return;
+        }
     }
 
     // e 后的部分必须是纯数字
     for (size_t i = start; i < after_e.size(); ++i) {
         if (type(after_e[i]) != 2) {
-            cout << "ILLEGAL_e4" << endl;
+            cout << "ILLEGAL_e5" << endl;
             flag = 0;
             return;
         }
@@ -192,19 +204,27 @@ inline void check_expressor(vector<string> & result, int &flag)
             //判断括号
             if(type(result[i][0]) == 1)//出现括号
             {
-                if(result[i] == "(") Leftbrackets++;//出现左括号+1，右括号-1
+                if(result[i] == "(") //出现左括号+1，右括号-1
+                {
+                    if(i-1 >= 0 && type(result[i][0]) == 2){
+                        cout << "ILLEGAL_c2" << endl;
+                        flag = 0;
+                        break;
+                    }
+                    else Leftbrackets++;
+                }
                 else 
                 {
                     Leftbrackets--;
                     if(Leftbrackets < 0)//右括号数大于左括号数报错
                     {
-                        cout << "ILLEGAL_c2" << endl;
+                        cout << "ILLEGAL_c3" << endl;
                         flag = 0;
                         break;
                     }
                     if(result[i-1] == "(" || (i<result.size()-1 && result[i+1] == "("))//"()"or")("
                     {
-                        cout << "ILLEGAL_c3"<<endl;
+                        cout << "ILLEGAL_c4"<<endl;
                         flag = 0;
                         break;
                     }
@@ -215,13 +235,13 @@ inline void check_expressor(vector<string> & result, int &flag)
             if(i == 0 && result[i] == "-")//处理负数为第一个数的情况
                 result.insert(result.begin()+i , "0");
 
-            if ((result[i] == "+" || result[i] == "-" || result[i] == "("))
+            if ((result[i] == "+" || result[i] == "("))
             {
                 if( i+1 < result.size() - 1 && result[i+1] == "-")
                     result.insert(result.begin()+i+1 , "0");
             }
 
-            if ((result[i] == "*" || result[i] == "/"))
+            if (result[i] == "*" || result[i] == "/"|| result[i] == "-" )
             {
                 if( i+1 < result.size() - 1 && result[i+1] == "-")
                 {
@@ -238,14 +258,14 @@ inline void check_expressor(vector<string> & result, int &flag)
                 // 检查左侧是否合法
                 if (i == 0 || (type(result[i - 1][0]) != 2 && result[i - 1] != ")")) 
                 {
-                    cout << "ILLEGAL_c4" << endl;
+                    cout << "ILLEGAL_c5" << endl;
                     flag = 0;
                     break;
                 }
                 // 检查右侧是否合法
                 if (i == result.size() - 1 || (type(result[i + 1][0]) != 2 && result[i + 1] != "(")) 
                 {
-                    cout << "ILLEGAL_c5" << endl;
+                    cout << "ILLEGAL_c6" << endl;
                     flag = 0;
                     break;
                 }
@@ -262,8 +282,17 @@ inline void check_expressor(vector<string> & result, int &flag)
     }
     //判断括号是否匹配
     if (Leftbrackets != 0) {
-        cout << "ILLEGAL_c5" << endl;
+        cout << "ILLEGAL_c7" << endl;
+        flag = 0;
     }
+
+    /*
+    for(auto x  : result)
+    {
+        cout << x << " ";
+    }
+    cout << endl;
+    */
 
     //if (flag == 1) cout << "expressor_True" << endl; //标记
 
@@ -396,11 +425,12 @@ inline void calculate(vector<string> &suffix,int &flag)
     }
 
     //cout << flag << endl;
-    if (flag == 1)
+    if (flag == 1 && calc_stk.size()==1)
     {
         float result = calc_stk.top();
         cout << result << endl; 
     }
+    else cout<<"ILLEGAL"<<endl;
 }
 
 
